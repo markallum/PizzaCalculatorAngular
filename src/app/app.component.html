@@ -16,7 +16,9 @@
   <div formArrayName="sets">
     <div class="row" 
       *ngFor="let set of setForm.get('sets').controls; let i = index"
-      [formGroupName]="i">
+      [formGroupName]="i"
+      [ngClass]="{'winner' : lowestValueIndex === i}"
+      >
       <div class="col-xs-3">
           <div class="form-group">
             <label name="size">Size (inches)</label>
@@ -81,6 +83,11 @@
     
   </form>
   
+    <button 
+      (click)="calculateBest()" 
+      type="button" 
+      class="btn btn-primary"
+    >Boom</button>
     </div>
   </div>
   

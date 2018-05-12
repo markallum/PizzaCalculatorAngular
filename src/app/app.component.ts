@@ -12,6 +12,8 @@ export class AppComponent implements OnInit {
   title = 'Pizza Calculator';
   setForm: FormGroup;
   calculateSubscription: Subscription;
+  lowestValueIndex: number;
+  wins = true;
 
   constructor(private calculatorService: CalculatorService) { }
 
@@ -28,10 +30,6 @@ export class AppComponent implements OnInit {
     arr.removeAt(index);
   }
 
-  onSubmit() {
-    const arr: FormArray = (<FormArray>this.setForm.get('sets'));
-  }
-
   patchResult(group: FormGroup, result: string) {
     group.patchValue({
       'pricePerInch': result
@@ -39,8 +37,6 @@ export class AppComponent implements OnInit {
   }
   
   calculateResult(group: FormGroup) {
-    // const groupAtIndex: FormGroup = 
-    //   (<FormGroup>(<FormArray>this.setForm.get('sets')).controls[index]);
     
     const size = group.get('size').value;
     const price = group.get('price').value;
@@ -65,9 +61,27 @@ export class AppComponent implements OnInit {
     this.patchResult(group, result);
   }
 
+  calculateBest() {
+    const formArr = (<FormArray>this.setForm.get('sets'));
+    let lowestValue = 0;
+
+     for (let i=0; 
+      i < formArr.controls.length; 
+      i++) {
+        const pricePerInch = formArr.controls[i].get('pricePerInch').value;
+
+        if (+pricePerInch < lowestValue || i == 0) {
+          lowestValue = pricePerInch;
+          this.lowestValueIndex = i;
+        }
+     }
+
+     console.log(this.lowestValueIndex + ' - ' + lowestValue);
+  }
+
   priceValidator(control: FormControl): {[s: string]: boolean } {
     if (control.value <= 0) {
-      return {'priceIsLessThanZero': true};
+      return {'priceNotGreaterThanZero': true};
     } else {
       return null;
     }
@@ -89,6 +103,11 @@ export class AppComponent implements OnInit {
 
     const calculateNewResult = () => {
       console.log('value change');
+      // valueChanges is triggered before statusChanges, therefore the check
+      // if group is valid will still be false if the value change that
+      // triggered this was the change that made it valid.
+      // This setTimeout use delays the code by one tick, which is enough 
+      // to let the status change first.
        setTimeout( () => {
         if (newGroup.valid) {
           this.calculateResult(newGroup);
@@ -116,37 +135,6 @@ export class AppComponent implements OnInit {
         calculateNewResult();
       }
     );
-    // newGroup.controls.size.valueChanges.subscribe(
-    //   () => { calculateNewResult() } 
-    // );
-
-    // newGroup.controls.price.valueChanges.subscribe(
-    //   () => { calculateNewResult() } 
-    // );
-
-    // newGroup.controls.quantity.valueChanges.subscribe(
-    //   () => { calculateNewResult() } 
-    // );
-
-    // newGroup.statusChanges.subscribe(
-    //   (status) => {
-    //     let valueSubscription: Subscription;
-    //     if (status === "VALID") {
-    //       calculateNewResult();
-    //       valueSubscription = newGroup.controls.size.valueChanges.subscribe(
-    //         () => {
-    //           calculateNewResult();
-    //         }
-    //       );
-    //     } else {
-    //       if (valueSubscription) {
-    //         valueSubscription.unsubscribe();
-    //       }
-    //     }
-    //   }
-    // );
-
-    
   }
 
 
